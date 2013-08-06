@@ -65,7 +65,7 @@ Using FriendlyDB from HTTP looks like (all trailing slashes are optional)::
 
     # From another, run some URLs.
     curl -X GET http://127.0.0.1:8008/
-    # {"version": "0.3.0"}
+    # {"version": "0.5.0"}
 
     curl -X GET http://127.0.0.1:8008/daniel/
     # {"username": "daniel", "following": [], "followers": []}
@@ -131,9 +131,13 @@ Running Tests
 Notes
 =============
 
-This is a forked/patched version of the original as licensed below. The original has now been converted to support Redis rather than file-based storage. And the approach to file-based storage included a bug where the number of subdirectories in friendlydb/ exceeds the subdirectory limit of 32,000 under ext3.
+This is a forked/patched version of the original as licensed below. The original has now been converted to support Redis rather than file-based storage, so this repo reverts those changes to allow file-based storage to be used. And the approach to file-based storage included a bug where the number of subdirectories in friendlydb/ exceeds the subdirectory limit of 32,000 under ext3. This has been fixed in this repo.
 
-This has been fixed in this repo. Also included is a template Django command script to be adapted to suit any applications which need to be converted from the old directory structure to this patched version. The conversion script has worked for me, but it is written in a very basic way.
+https://github.com/toastdriven/friendlydb/issues/2
+
+These revisions are not backwards compatible without converting any existing directory structure. Included is a template Django command script to be adapted to suit any applications which need to be converted from the old directory structure to this patched version. The conversion script has worked for me, but it is written in a very basic way.
+
+
 
 License
 =======
@@ -141,5 +145,5 @@ License
 New BSD license.
 
 :author: Daniel Lindsley
-:version: 0.4.0
+:version: 0.5.0
 :date: 2012-01-30
