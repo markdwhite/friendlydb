@@ -104,7 +104,7 @@ Requirements
 Installation
 ============
 
-Using pip, you can install it with ``pip install friendlydb``.
+Only from this github repo using pip, or cloning
 
 
 Performance
@@ -128,21 +128,12 @@ Running Tests
     python -m unittest2 tests
 
 
-Contributions
+Notes
 =============
 
-In order for a contribution to be considered for merging, it must meet the
-following requirements:
+This is a forked/patched version of the original as licensed below. The original has now been converted to support Redis rather than file-based storage. And the approach to file-based storage included a bug where the number of subdirectories in friendlydb/ exceeds the subdirectory limit of 32,000 under ext3.
 
-* Patch cleanly solves the problem
-* Added test coverage (now passing) to expose the bug & check for regression
-* If the behavior affects end-users, there must be docs on the changes
-* The patch/tests must be compatibly licensed with New BSD
-
-The best way to submit contributions is by forking the project on Github,
-applying your changes *on a new branch*, pushing those changes back to GH &
-submitting a pull request through the GitHub interface.
-
+This has been fixed in this repo. Also included is a template Django command script to be adapted to suit any applications which need to be converted from the old directory structure to this patched version. The conversion script has worked for me, but it is written in a very basic way.
 
 License
 =======
