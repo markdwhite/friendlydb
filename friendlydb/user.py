@@ -58,7 +58,8 @@ class FriendlyUser(object):
     # Plumbing.
 
     def hash_username(self):
-        return hashlib.md5(self.username).hexdigest()[:self.hash_width]
+        user_hash =  hashlib.md5(self.username).hexdigest()[:self.hash_width]
+        return os.sep.join([user_hash[i:i+2] for i in range(0, len(user_hash), 2)])
 
     def following_path(self):
         return os.path.join(self.full_path, 'following')
