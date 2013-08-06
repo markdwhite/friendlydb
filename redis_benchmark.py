@@ -1,36 +1,27 @@
-# A small, stupid benchmark for friendlydb.
+# A small, stupid Redis benchmark for friendlydb.
 #
 # v0.3.1
 # ------
 #
-# Generating 10000 took 0.103417158127
-# Building 1000000 relations took 455.301289082
-# Checking 1000 users followers took 0.428857803345
-#   mean: 0.000428096532822
-#   min: 0.000310897827148
-#   max: 0.000933885574341
-#
-# v0.2.1
-# ------
-#
-# Generating 10000 took 0.106270074844
-# Building 1000000 relations took 439.715919018
-# Checking 1000 users followers took 0.83282494545
-#   mean: 0.000831272602081
-#   min: 0.000524997711182
-#   max: 0.000524997711182 # FAIL - fixed in v0.3.1
-#
+# Generating 10000 took 0.108589887619
+# Building 1000000 relations took 144.261595011
+# Checking 1000 users followers took 0.111661195755
+#   mean: 0.000110897779465
+#   min: 9.70363616943e-05
+#   max: 0.000331878662109
 
 from __future__ import print_function
 import random
+import redis
 import shutil
 import time
 from friendlydb.db import FriendlyDB
+from friendlydb.user import FriendlyUser
 
 
 # Config.
 all_chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
-data_dir = '/tmp/bench_friendly'
+data_dir = '/tmp/bench_redis_friendly'
 user_count = 10000
 relation_count = 1000000
 followers_check = 1000
@@ -39,7 +30,41 @@ followers_check = 1000
 # Go go go!
 chars = [char for char in all_chars]
 users = []
-fdb = FriendlyDB(data_dir)
+conn = redis.StrictRedis(host='localhost', port=6379, db=15)
+
+
+class RedisFriendlyUser(FriendlyUser):
+    def __init__(self, *args, **kwargs):
+        global conn
+        super(RedisFriendlyUser, self).__init__(*args, **kwargs)
+        self.conn = conn
+
+    def setup(self):
+        # Don't do any of the usual file stuff.
+        self.is_setup = True
+
+    def follow(self, username):
+        self.conn.sadd("%s_following" % self.username, username)
+        self.conn.sadd("%s_followers" % username, self.username)
+
+    def unfollow(self, username):
+        self.conn.srem("%s_following" % self.username, username)
+        self.conn.srem("%s_followers" % username, self.username)
+
+    def following(self):
+        return self.conn.smembers("%s_following" % self.username)
+
+    def followers(self):
+        return self.conn.smembers("%s_followers" % self.username)
+
+    def is_following(self, username):
+        return self.conn.sismember("%s_following" % self.username, username)
+
+    def is_followed_by(self, username):
+        return self.conn.sismember("%s_followers" % self.username, username)
+
+
+fdb = FriendlyDB(data_dir, user_klass=RedisFriendlyUser)
 
 
 def time_taken(func):
@@ -91,7 +116,7 @@ def check_followers():
 
 
 if __name__ == '__main__':
-    shutil.rmtree(data_dir, ignore_errors=True)
+    conn.flushdb()
 
     print('Running benchmark...')
     print('  User Count: %s' % user_count)
@@ -115,4 +140,4 @@ if __name__ == '__main__':
     print("  min: %s" % results['min_time'])
     print("  max: %s" % results['max_time'])
 
-    shutil.rmtree(data_dir, ignore_errors=True)
+    conn.flushdb()
